@@ -14,9 +14,9 @@ class neuralNetwork:
         self.hnodes = hiddennodes
         self.onodes = outputnodes
         
-#         self.wih = (numpy.random.rand(self.hnodes, self.inodes) - 0.5)
-#         self.who = (numpy.random.rand(self.hnodes, self.inodes) - 0.5)
+        #matrix that converts input to hidden layer
         self.wih = numpy.random.normal(0.0, pow(self.inodes, -0.5), (self.hnodes, self.inodes))
+        #matrix that converts hidden to output layer
         self.who = numpy.random.normal(0.0, pow(self.hnodes, -0.5), (self.onodes, self.hnodes))
         
         #defines self activations function
@@ -28,19 +28,22 @@ class neuralNetwork:
         inputs = numpy.array(inputs_list, ndmin=2).T
         targets = numpy.array(targets_list, ndmin=2).T
         
+        #converts input to hidden and performs activation function
         hidden_inputs = numpy.dot(self.wih, inputs)
         hidden_outputs = self.activation_function(hidden_inputs)
+        #converts hiddent to output and performs activation function
         final_inputs = numpy.dot(self.who, hidden_outputs)
         final_outputs = self.activation_function(final_inputs)
         
         output_errors = targets - final_outputs
         hidden_errors = numpy.dot(self.who.T, output_errors)
         
-        #update
+        #updates the weights in the conversion matrices using gradient
         self.who += self.lr * numpy.dot((output_errors * final_outputs * (1.0 - final_outputs)), numpy.transpose(hidden_outputs))
         self.wih += self.lr * numpy.dot((hidden_errors * hidden_outputs * (1.0 - hidden_outputs)), numpy.transpose(inputs))
         pass
     
+    #returns the output of an input list without updating weights
     def query(self, inputs_list):
         #convert inputs list to 2d array
         inputs = numpy.array(inputs_list, ndmin=2).T
@@ -52,6 +55,7 @@ class neuralNetwork:
         
         return final_outputs
 
+#input layer contains 784 nodes, hidden layer contains 10 nodes, output layer contains 10 nodes
 input_nodes = 784
 hidden_nodes = 100
 output_nodes = 10
@@ -64,6 +68,8 @@ training_data_file = open("mnist_dataset/mnist_train.csv", 'r')
 training_data_list = training_data_file.readlines()
 training_data_file.close()
 
+
+#loops over training data twice
 epochs = 2
 
 for e in range(epochs):
@@ -81,6 +87,7 @@ test_data_file.close()
 
 scorecard = []
 
+#tests the newly created model (conversion matrices have updated weights)
 for record in test_data_list:
     all_values = record.split(',')
     correct_label = int(all_values[0])
